@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth/auth_service.dart';
 import '../services/supabase_service.dart';
@@ -15,6 +16,32 @@ class TaskProvider extends ChangeNotifier {
   List<TaskModel> get tasks => _tasks;
   bool get isFetching => _isFetching;
   String? get errorMessage => _errorMessage;
+
+  // Converts low-level Supabase/network exceptions into beginner-friendly text.
+  // This helps users understand whether the issue is permissions (RLS), network,
+  // or a temporary backend error.
+  String _friendlyError(Object error, String fallback) {
+    if (error is PostgrestException) {
+      final message = error.message.toLowerCase();
+      final status = error.code;
+
+      if (status == '403' || message.contains('permission denied')) {
+        return 'Permission denied by Supabase RLS. Please check table policies for this user.';
+      }
+
+      if (status == '401') {
+        return 'Your session is not authorized. Please log out and log in again.';
+      }
+
+      return 'Supabase error: ${error.message}';
+    }
+
+    if (error is AuthException) {
+      return 'Authentication issue: ${error.message}';
+    }
+
+    return fallback;
+  }
 
   // This is called from ChangeNotifierProxyProvider whenever auth changes.
   // It lets us automatically clear/fetch tasks for the correct user.
@@ -49,8 +76,11 @@ class TaskProvider extends ChangeNotifier {
 
     try {
       _tasks = await _supabaseService.fetchTasks(userId: userId);
-    } catch (_) {
-      _errorMessage = 'Could not load tasks. Please check your connection.';
+    } catch (error) {
+      _errorMessage = _friendlyError(
+        error,
+        'Could not load tasks. Please check your connection.',
+      );
     } finally {
       _isFetching = false;
       notifyListeners();
@@ -71,8 +101,11 @@ class TaskProvider extends ChangeNotifier {
       _tasks = [task, ..._tasks];
       notifyListeners();
       return null;
-    } catch (_) {
-      return 'Unable to add task right now. Please try again.';
+    } catch (error) {
+      return _friendlyError(
+        error,
+        'Unable to add task right now. Please try again.',
+      );
     }
   }
 
@@ -89,10 +122,10 @@ class TaskProvider extends ChangeNotifier {
     try {
       await _supabaseService.deleteTask(taskId: taskId, userId: userId);
       return null;
-    } catch (_) {
+    } catch (error) {
       _tasks = previousTasks;
       notifyListeners();
-      return 'Unable to delete task. Please try again.';
+      return _friendlyError(error, 'Unable to delete task. Please try again.');
     }
   }
 
@@ -118,10 +151,13 @@ class TaskProvider extends ChangeNotifier {
         isCompleted: isCompleted,
       );
       return null;
-    } catch (_) {
+    } catch (error) {
       _tasks[index] = originalTask;
       notifyListeners();
-      return 'Unable to update task status. Please try again.';
+      return _friendlyError(
+        error,
+        'Unable to update task status. Please try again.',
+      );
     }
   }
 
@@ -154,10 +190,13 @@ class TaskProvider extends ChangeNotifier {
         title: trimmedTitle,
       );
       return null;
-    } catch (_) {
+    } catch (error) {
       _tasks[index] = originalTask;
       notifyListeners();
-      return 'Unable to update task title. Please try again.';
+      return _friendlyError(
+        error,
+        'Unable to update task title. Please try again.',
+      );
     }
   }
 }

@@ -126,6 +126,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
+                                      color: Colors.white,
                                     ),
                                   )
                                 : const Text('Create account'),

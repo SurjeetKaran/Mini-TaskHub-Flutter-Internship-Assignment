@@ -30,7 +30,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _showAddTaskDialog(BuildContext context) async {
-    final TextEditingController controller = TextEditingController();
+    // Keep this controller local to the dialog flow.
+    // This prevents the widget tree from reusing a disposed controller.
+    final TextEditingController taskController = TextEditingController();
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
     await showGeneralDialog<void>(
@@ -44,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           content: Form(
             key: formKey,
             child: TextFormField(
-              controller: controller,
+              controller: taskController,
               autofocus: true,
               maxLength: 80,
               decoration: const InputDecoration(
@@ -66,7 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 }
 
                 final error = await context.read<TaskProvider>().addTask(
-                  controller.text.trim(),
+                  taskController.text.trim(),
                 );
 
                 if (!context.mounted) {
@@ -97,8 +99,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       },
     );
-
-    controller.dispose();
   }
 
   Future<void> _showEditTaskDialog(
@@ -188,8 +188,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       },
     );
-
-    controller.dispose();
   }
 
   Future<void> _handleLogout(BuildContext context) async {
