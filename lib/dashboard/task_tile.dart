@@ -7,11 +7,13 @@ class TaskTile extends StatelessWidget {
     super.key,
     required this.task,
     required this.onToggle,
+    required this.onEdit,
     required this.onDelete,
   });
 
   final TaskModel task;
   final ValueChanged<bool?> onToggle;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
@@ -34,6 +36,11 @@ class TaskTile extends StatelessWidget {
                       : TextDecoration.none,
                 ),
               ),
+            ),
+            IconButton(
+              onPressed: onEdit,
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Edit task',
             ),
             IconButton(
               onPressed: onDelete,

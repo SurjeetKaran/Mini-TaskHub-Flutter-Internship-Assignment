@@ -124,4 +124,40 @@ class TaskProvider extends ChangeNotifier {
       return 'Unable to update task status. Please try again.';
     }
   }
+
+  Future<String?> editTaskTitle(TaskModel task, String updatedTitle) async {
+    final userId = _activeUserId;
+    if (userId == null) {
+      return 'You must be logged in to update tasks.';
+    }
+
+    final trimmedTitle = updatedTitle.trim();
+    if (trimmedTitle.isEmpty) {
+      return 'Task title cannot be empty.';
+    }
+
+    final index = _tasks.indexWhere((item) => item.id == task.id);
+    if (index < 0) {
+      return 'Task not found.';
+    }
+
+    // We first update local state so the UI feels instant.
+    // If the backend update fails, we rollback to the original value.
+    final originalTask = _tasks[index];
+    _tasks[index] = originalTask.copyWith(title: trimmedTitle);
+    notifyListeners();
+
+    try {
+      await _supabaseService.updateTaskTitle(
+        taskId: task.id,
+        userId: userId,
+        title: trimmedTitle,
+      );
+      return null;
+    } catch (_) {
+      _tasks[index] = originalTask;
+      notifyListeners();
+      return 'Unable to update task title. Please try again.';
+    }
+  }
 }

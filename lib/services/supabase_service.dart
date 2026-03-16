@@ -48,4 +48,16 @@ class SupabaseService {
         .eq('id', taskId)
         .eq('user_id', userId);
   }
+
+  Future<void> updateTaskTitle({
+    required String taskId,
+    required String userId,
+    required String title,
+  }) async {
+    await _client
+        .from('tasks')
+        .update({'title': title})
+        .eq('id', taskId)
+        .eq('user_id', userId);
+  }
 }
