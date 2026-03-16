@@ -14,9 +14,14 @@ The project is intentionally structured in a clean and beginner-friendly way so 
 
 - Email/password authentication (signup, login, logout)
 - Task creation
+- Task editing (update title from edit dialog)
 - Task deletion
 - Task completion toggle (checkbox)
 - User-specific task list (each user only sees their own tasks)
+- Task counter in dashboard title (example: My Tasks (3))
+- Friendly empty state with icon and onboarding message
+- Loading spinner while tasks are fetched from Supabase
+- Success feedback SnackBars for add, edit, and delete actions
 - Basic error handling with SnackBar messages
 
 ## 3. Tech Stack
@@ -177,13 +182,22 @@ Use this flow to demo the assignment:
 	 - On Dashboard, tap the + button
 	 - Enter task title and submit
 
-4. Toggle completion
+4. Edit task
+	 - Tap the edit icon on any task row
+	 - Update the title in the dialog
+	 - Tap Save
+
+5. Toggle completion
 	 - Tap the checkbox next to a task to mark complete/incomplete
 
-5. Delete task
+6. Delete task
 	 - Tap the delete icon on a task row
 
-6. Logout
+7. Check task counter and empty state
+	 - Verify AppBar title updates like My Tasks (N)
+	 - Delete all tasks and confirm the empty state message appears
+
+8. Logout
 	 - Tap logout icon in the AppBar
 
 ## Unit Test Included
